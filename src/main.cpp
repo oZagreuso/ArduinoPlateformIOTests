@@ -4,7 +4,7 @@
 #include <LittleFS.h>
 
 const char* ssid = "Zagreus";
-const char* password = "NimrodNoamZagreus";
+const char* password = "";
 
 ESP8266WebServer server(80);
 
