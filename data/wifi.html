@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Wifi Scan</title>
+<link rel="stylesheet" href="/app.css">
+</head>
+
+<body>
+
+<h1>Wifi Scanner</h1>
+
+<button onclick="scan()">Scanner</button>
+
+<ul id="list"></ul>
+
+<script src="/app.js"></script>
+
+<script>
+async function scan(){
+
+  const res = await fetch("/api/wifi");
+  const networks = await res.json();
+
+  const list = document.getElementById("list");
+  list.innerHTML="";
+
+  networks.forEach(n => {
+
+    const li=document.createElement("li");
+
+    li.innerText =
+      n.ssid + " (" + n.rssi + " dBm)";
+
+    list.appendChild(li);
+
+  });
+}
+</script>
+
+</body>
+</html>
