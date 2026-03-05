@@ -17,6 +17,17 @@
 <h1>ESP8266 Control</h1>
 <p class="sub">LED et WiFi</p>
 
+<div class="row" style="margin-top:12px">
+  <div class="pill">
+    <div class="k">Heure (Paris)</div>
+    <div class="v" id="clock">—</div>
+  </div>
+  <div class="pill">
+    <div class="k">Date</div>
+    <div class="v" id="date">—</div>
+  </div>
+</div>
+
 <div class="status">
 <div class="dot" id="dot"></div>
 <strong id="state">---</strong>
@@ -31,6 +42,28 @@ ON
 <button class="btn btn-off" onclick="ledOff()">
 OFF
 </button>
+
+<div class="row" style="margin-top:14px">
+  <div class="pill">
+    <div class="k">Uptime</div>
+    <div class="v" id="uptime">—</div>
+  </div>
+  <div class="pill">
+    <div class="k">Heap libre</div>
+    <div class="v" id="heap">—</div>
+  </div>
+</div>
+
+<div class="row" style="margin-top:12px">
+  <div class="pill">
+    <div class="k">Wi-Fi (RSSI)</div>
+    <div class="v" id="sys_rssi">—</div>
+  </div>
+  <div class="pill">
+    <div class="k">Reset reason</div>
+    <div class="v" id="reset">—</div>
+  </div>
+</div>
 
 <a class="btn btn-wifi" href="/wifi">
 WiFi Scan

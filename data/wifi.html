@@ -1,42 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
+
 <head>
 <meta charset="UTF-8">
-<title>Wifi Scan</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WiFi Scanner</title>
+
 <link rel="stylesheet" href="/app.css">
+
 </head>
 
 <body>
 
-<h1>Wifi Scanner</h1>
+<div class="wrap">
 
-<button onclick="scan()">Scanner</button>
+<div class="card">
 
-<ul id="list"></ul>
+<h1>WiFi Scanner</h1>
+<p class="sub">Réseaux détectés</p>
+
+<button class="btn btn-wifi" onclick="scanWifi()">
+Scanner
+</button>
+
+<div id="wifiList" class="wifi-list"></div>
+
+<a class="btn btn-off" href="/">Retour</a>
+
+</div>
+
+</div>
 
 <script src="/app.js"></script>
-
-<script>
-async function scan(){
-
-  const res = await fetch("/api/wifi");
-  const networks = await res.json();
-
-  const list = document.getElementById("list");
-  list.innerHTML="";
-
-  networks.forEach(n => {
-
-    const li=document.createElement("li");
-
-    li.innerText =
-      n.ssid + " (" + n.rssi + " dBm)";
-
-    list.appendChild(li);
-
-  });
-}
-</script>
 
 </body>
 </html>
