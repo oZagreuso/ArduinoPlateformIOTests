@@ -42,6 +42,31 @@ function fmtUptime(sec){
   return `${h}h ${m}m ${s}s`
 }
 
+async function updateWeather(){
+
+  try{
+
+    const res = await fetch("/api/weather")
+    const data = await res.json()
+
+    if(!data.current_weather) return
+
+    document.getElementById("temp").textContent =
+      data.current_weather.temperature + " °C"
+
+    document.getElementById("wind").textContent =
+      data.current_weather.windspeed + " km/h"
+
+  }catch(e){
+    console.log("weather error",e)
+  }
+
+}
+
+updateWeather()
+
+setInterval(updateWeather,600000)
+
 async function updateSystem(){
   const res = await fetch("/api/system", { cache: "no-store" })
   const d = await res.json()

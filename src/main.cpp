@@ -3,6 +3,7 @@
 #include <ESP8266WebServer.h>
 #include <LittleFS.h>
 #include <time.h>
+#include <ESP8266HTTPClient.h>
 
 const char* ssid = "Zagreus";
 const char* password = "";
@@ -39,6 +40,43 @@ String jsonSystem() {
   return s;
 }
 
+String getWeather() {
+  WiFiClient client;
+  HTTPClient http;
+
+  String url =
+    "http://api.open-meteo.com/v1/forecast?latitude=48.85&longitude=2.35&current_weather=true";
+
+  Serial.println("[weather] GET " + url);
+
+  if (!http.begin(client, url)) {
+    return "{\"error\":\"http.begin failed\"}";
+  }
+
+  http.setTimeout(8000);
+  http.setUserAgent("ESP8266");
+
+  int httpCode = http.GET();
+  Serial.printf("[weather] httpCode=%d\n", httpCode);
+
+  if (httpCode <= 0) {
+    String err = http.errorToString(httpCode);
+    http.end();
+    String out = "{\"error\":\"GET failed\",\"code\":";
+    out += String(httpCode);
+    out += ",\"msg\":\"";
+    out += err;
+    out += "\"}";
+    return out;
+  }
+
+  String payload = http.getString();
+  Serial.printf("[weather] bytes=%d\n", payload.length());
+
+  http.end();
+  return payload;
+}
+
 void handleWifiScan() {
   int n = WiFi.scanNetworks();
   String json = "[";
@@ -54,7 +92,7 @@ void handleWifiScan() {
   }
 
   json += "]";
-  server.send(200, "application/json", json);
+  server.send(200, "application/json; charset=utf-8", json);
   WiFi.scanDelete();
 }
 
@@ -65,7 +103,6 @@ void initTimeParis() {
 }
 
 bool timeSynced() {
-  // 1700000000 ~ fin 2023, donc si on est au-dessus, NTP est OK
   return time(nullptr) > 1700000000;
 }
 
@@ -125,7 +162,6 @@ void setup() {
 
   initTimeParis();
 
-  // attend un peu la synchro NTP (max ~6s), sans bloquer si ça rate
   for (int i = 0; i < 30 && !timeSynced(); i++) {
     delay(200);
   }
@@ -138,24 +174,31 @@ void setup() {
     Serial.println("LittleFS OK");
   }
 
-  // Pages (servir explicitement / et /wifi)
   server.on("/", []() { sendFileOr404("/index.html", "text/html; charset=utf-8"); });
   server.on("/wifi", []() { sendFileOr404("/wifi.html", "text/html; charset=utf-8"); });
+  server.on("/console", []() { sendFileOr404("/console.html", "text/html; charset=utf-8"); });
+
   server.on("/app.css", []() { sendFileOr404("/app.css", "text/css; charset=utf-8"); });
   server.on("/app.js", []() { sendFileOr404("/app.js", "application/javascript; charset=utf-8"); });
 
-  // API
-  server.on("/api/time", []() { server.send(200, "application/json", jsonTime()); });
-  server.on("/api/system", []() { server.send(200, "application/json", jsonSystem()); });
-  server.on("/api/state", []() { server.send(200, "application/json", jsonState()); });
+  server.on("/api/time", []() { server.send(200, "application/json; charset=utf-8", jsonTime()); });
+  server.on("/api/system", []() { server.send(200, "application/json; charset=utf-8", jsonSystem()); });
+  server.on("/api/state", []() { server.send(200, "application/json; charset=utf-8", jsonState()); });
 
-  server.on("/api/on", []() { ledOn = true; applyLed(); server.send(200, "application/json", jsonState()); });
-  server.on("/api/off", []() { ledOn = false; applyLed(); server.send(200, "application/json", jsonState()); });
-  server.on("/api/toggle", []() { ledOn = !ledOn; applyLed(); server.send(200, "application/json", jsonState()); });
+  server.on("/api/on", []() { ledOn = true; applyLed(); server.send(200, "application/json; charset=utf-8", jsonState()); });
+  server.on("/api/off", []() { ledOn = false; applyLed(); server.send(200, "application/json; charset=utf-8", jsonState()); });
+  server.on("/api/toggle", []() { ledOn = !ledOn; applyLed(); server.send(200, "application/json; charset=utf-8", jsonState()); });
 
   server.on("/api/wifi", handleWifiScan);
 
-  server.onNotFound([]() { server.send(404, "text/plain; charset=utf-8", "404"); });
+  server.on("/api/weather", []() {
+    String weather = getWeather();
+    server.send(200, "application/json; charset=utf-8", weather);
+  });
+
+  server.onNotFound([]() {
+    server.send(404, "text/plain; charset=utf-8", "404");
+  });
 
   server.begin();
   Serial.println("Serveur HTTP démarré");

@@ -217,3 +217,9 @@ background:#38d39f33;
 .open{
 background:#ff6b6b33;
 }
+
+.weather{
+display:flex;
+gap:10px;
+margin-top:15px;
+}
